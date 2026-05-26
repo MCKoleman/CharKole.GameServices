@@ -6,6 +6,10 @@ namespace CharKole.GameServices
 {
     public class ServiceInitializer : MonoBehaviour
     {
+        protected virtual bool LOG_DEBUG => false;
+        protected virtual bool LOG_WARN => true;
+        protected virtual bool LOG_ERROR => true;
+        
         private Dictionary<Type, GameService> services = new();
 
         public static ServiceInitializer Instance { get; private set; }
@@ -34,17 +38,26 @@ namespace CharKole.GameServices
             T service = this.GetComponentInChildren<T>();
             if (service == null)
             {
-                Debug.LogError($"[CharKole.GameService.ServiceInitializer]: Service {typeof(T)} does not exist on ServiceInitializer.");
+                if (LOG_ERROR)
+                {
+                    Debug.LogError($"[CharKole.GameService.ServiceInitializer]: Service {typeof(T)} does not exist on ServiceInitializer.");
+                }
                 return;
             }
 
             if (services.ContainsKey(service.GetType())) 
             {
-                Debug.LogWarning($"[CharKole.GameService.ServiceInitializer]: Skipped registering service {service.name}, a service of the same type already exists.");
+                if (LOG_WARN)
+                {
+                    Debug.LogWarning($"[CharKole.GameService.ServiceInitializer]: Skipped registering service {service.name}, a service of the same type already exists.");
+                }
                 return;
             }
 
-            Debug.Log($"[CharKole.GameService.ServiceInitializer]: Registering service {service.name}.");
+            if (LOG_DEBUG)
+            {
+                Debug.Log($"[CharKole.GameService.ServiceInitializer]: Registering service {service.name}.");
+            }
             ServiceLocator.Register<T>(service);
             services.Add(service.GetType(), service);
         }
@@ -53,7 +66,10 @@ namespace CharKole.GameServices
         {
             foreach (GameService service in services.Values)
             {
-                Debug.Log($"[CharKole.GameService.ServiceInitializer]: Initializing service {service.name}.");
+                if (LOG_DEBUG)
+                {
+                    Debug.Log($"[CharKole.GameService.ServiceInitializer]: Initializing service {service.name}.");
+                }
                 service.Init();
             }
         }
